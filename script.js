@@ -63,27 +63,6 @@
         document.body.classList.toggle("mode-cover", mode === "cover");
     }
 
-    function detectNotchSide(insets) {
-        var maxInset = Math.max(insets.top, insets.right, insets.bottom, insets.left);
-        if (maxInset <= 0) {
-            return "none";
-        }
-
-        if (maxInset === insets.top) {
-            return "top";
-        }
-
-        if (maxInset === insets.right) {
-            return "right";
-        }
-
-        if (maxInset === insets.bottom) {
-            return "bottom";
-        }
-
-        return "left";
-    }
-
     function applyInnerOutline(innerMetrics, insets, mode) {
         var innerOutline = document.getElementById("inner-outline");
         if (!innerOutline) {
@@ -153,7 +132,6 @@
         var outerMetrics = window.getWindowOuterSize();
         var innerMetrics = window.getWindowInnerSize();
         var insets = window.getSafeAreaInsets();
-        var notchSide = detectNotchSide(insets);
 
         applyInnerOutline(innerMetrics, insets, mode);
 
@@ -172,14 +150,13 @@
             outerElement.textContent = "window.outerWidth / window.outerHeight: " + outerMetrics.width + " x " + outerMetrics.height + " px";
         }
 
-        var notchElement = document.getElementById("measure-notch");
-        if (notchElement) {
-            notchElement.textContent = "Notch side: " + notchSide + " (insets t/r/b/l: " + insets.top + "/" + insets.right + "/" + insets.bottom + "/" + insets.left + " px)";
-        }
-
         var innerElement = document.getElementById("measure-inner");
         if (innerElement) {
             innerElement.textContent = "window.innerWidth / window.innerHeight: " + innerMetrics.width + " x " + innerMetrics.height + " px";
+        }
+
+        if (typeof window.detectNotchPosition === "function") {
+            window.detectNotchPosition();
         }
 
         console.log("Safe-area insets:", insets);
