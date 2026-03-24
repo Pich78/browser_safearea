@@ -11,6 +11,13 @@
         }
 
         var rawMetrics = window.getRawScreenArea();
+
+        var rawOutline = document.getElementById("raw-outline");
+        if (rawOutline) {
+            rawOutline.style.width = rawMetrics.width + "px";
+            rawOutline.style.height = rawMetrics.height + "px";
+        }
+
         var rawAreaElement = document.getElementById("raw-area");
         if (rawAreaElement) {
             rawAreaElement.textContent = "Raw area: " + rawMetrics.area.toLocaleString() + " px (" + rawMetrics.width + " x " + rawMetrics.height + " px)";
