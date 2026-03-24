@@ -1,6 +1,8 @@
 (function () {
     "use strict";
 
+    var NOTCH_THRESHOLD = 20;
+
     // Reads safe-area insets from CSS custom properties and infers notch side.
     function detectNotchPosition() {
         var rootStyle = window.getComputedStyle(document.documentElement);
@@ -8,20 +10,20 @@
         var right = parseInt(rootStyle.getPropertyValue("--safe-right"), 10) || 0;
         var left = parseInt(rootStyle.getPropertyValue("--safe-left"), 10) || 0;
 
-        var notchPosition = "Nessun notch (o schermo intero non attivo)";
+        var notchPosition = "No notch detected (or fullscreen mode not active)";
 
         // Values above this threshold are treated as notch/cutout indicators.
-        if (top > 20) {
-            notchPosition = "In Alto (Portrait)";
-        } else if (left > 20) {
-            notchPosition = "A Sinistra (Landscape)";
-        } else if (right > 20) {
-            notchPosition = "A Destra (Landscape)";
+        if (top > NOTCH_THRESHOLD) {
+            notchPosition = "Top (portrait)";
+        } else if (left > NOTCH_THRESHOLD) {
+            notchPosition = "Left (landscape)";
+        } else if (right > NOTCH_THRESHOLD) {
+            notchPosition = "Right (landscape)";
         }
 
         var infoElement = document.getElementById("notch-info");
         if (infoElement) {
-            infoElement.innerText = "Posizione Notch: " + notchPosition + " (Top: " + top + ", Left: " + left + ", Right: " + right + ")";
+            infoElement.textContent = "Notch position: " + notchPosition + " (Top: " + top + ", Left: " + left + ", Right: " + right + ")";
         }
 
         console.log("Notch position:", notchPosition, { top: top, left: left, right: right });
@@ -40,10 +42,15 @@
         window.setTimeout(detectNotchPosition, 100);
     }
 
+    function runInitialDetection() {
+        // Delay one tick so CSS env values settle before first render.
+        window.setTimeout(detectNotchPosition, 0);
+    }
+
     if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", detectNotchPosition);
+        document.addEventListener("DOMContentLoaded", runInitialDetection);
     } else {
-        detectNotchPosition();
+        runInitialDetection();
     }
 
     window.addEventListener("orientationchange", runDetectionAfterRotation);

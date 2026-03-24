@@ -171,6 +171,10 @@
         renderMetrics();
         window.addEventListener("resize", renderMetrics);
 
+        if (typeof window.detectNotchPosition === "function") {
+            window.setTimeout(window.detectNotchPosition, 80);
+        }
+
         window.addEventListener("orientationchange", function () {
             setTimeout(function () {
                 renderOrientationEvent("orientationchange");
