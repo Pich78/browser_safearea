@@ -155,7 +155,9 @@
             innerElement.textContent = "window.innerWidth / window.innerHeight: " + innerMetrics.width + " x " + innerMetrics.height + " px";
         }
 
-        if (typeof window.detectNotchPosition === "function") {
+        if (typeof window.scheduleNotchDetection === "function") {
+            window.scheduleNotchDetection();
+        } else if (typeof window.detectNotchPosition === "function") {
             window.detectNotchPosition();
         }
 
@@ -171,7 +173,9 @@
         renderMetrics();
         window.addEventListener("resize", renderMetrics);
 
-        if (typeof window.detectNotchPosition === "function") {
+        if (typeof window.scheduleNotchDetection === "function") {
+            window.scheduleNotchDetection();
+        } else if (typeof window.detectNotchPosition === "function") {
             window.setTimeout(window.detectNotchPosition, 80);
         }
 

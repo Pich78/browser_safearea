@@ -2,28 +2,55 @@
     "use strict";
 
     var NOTCH_THRESHOLD = 20;
+    var SIDE_DELTA_THRESHOLD = 2;
+
+    function isLandscape() {
+        return window.innerWidth > window.innerHeight;
+    }
+
+    function classifyNotchSide(top, left, right) {
+        if (top <= NOTCH_THRESHOLD && left <= NOTCH_THRESHOLD && right <= NOTCH_THRESHOLD) {
+            return "No notch detected (or fullscreen mode not active)";
+        }
+
+        if (top > NOTCH_THRESHOLD && top >= left + SIDE_DELTA_THRESHOLD && top >= right + SIDE_DELTA_THRESHOLD) {
+            return "Top (portrait)";
+        }
+
+        if (left > NOTCH_THRESHOLD || right > NOTCH_THRESHOLD) {
+            var diff = left - right;
+            if (Math.abs(diff) > SIDE_DELTA_THRESHOLD) {
+                return diff > 0 ? "Left (landscape)" : "Right (landscape)";
+            }
+
+            if (isLandscape()) {
+                return "Ambiguous (left/right nearly equal)";
+            }
+        }
+
+        if (left > right) {
+            return "Left (landscape)";
+        }
+
+        if (right > left) {
+            return "Right (landscape)";
+        }
+
+        return "Unknown";
+    }
 
     // Reads safe-area insets from CSS custom properties and infers notch side.
     function detectNotchPosition() {
         var rootStyle = window.getComputedStyle(document.documentElement);
-        var top = parseInt(rootStyle.getPropertyValue("--safe-top"), 10) || 0;
-        var right = parseInt(rootStyle.getPropertyValue("--safe-right"), 10) || 0;
-        var left = parseInt(rootStyle.getPropertyValue("--safe-left"), 10) || 0;
+        var top = parseFloat(rootStyle.getPropertyValue("--safe-top")) || 0;
+        var right = parseFloat(rootStyle.getPropertyValue("--safe-right")) || 0;
+        var left = parseFloat(rootStyle.getPropertyValue("--safe-left")) || 0;
 
-        var notchPosition = "No notch detected (or fullscreen mode not active)";
-
-        // Values above this threshold are treated as notch/cutout indicators.
-        if (top > NOTCH_THRESHOLD) {
-            notchPosition = "Top (portrait)";
-        } else if (left > NOTCH_THRESHOLD) {
-            notchPosition = "Left (landscape)";
-        } else if (right > NOTCH_THRESHOLD) {
-            notchPosition = "Right (landscape)";
-        }
+        var notchPosition = classifyNotchSide(top, left, right);
 
         var infoElement = document.getElementById("notch-info");
         if (infoElement) {
-            infoElement.textContent = "Notch position: " + notchPosition + " (Top: " + top + ", Left: " + left + ", Right: " + right + ")";
+            infoElement.textContent = "Notch position: " + notchPosition + " (Top: " + top.toFixed(1) + ", Left: " + left.toFixed(1) + ", Right: " + right.toFixed(1) + ")";
         }
 
         console.log("Notch position:", notchPosition, { top: top, left: left, right: right });
@@ -38,13 +65,25 @@
 
     window.detectNotchPosition = detectNotchPosition;
 
+    function scheduleNotchDetection() {
+        window.setTimeout(function () {
+            window.requestAnimationFrame(function () {
+                window.requestAnimationFrame(function () {
+                    detectNotchPosition();
+                });
+            });
+        }, 120);
+    }
+
+    window.scheduleNotchDetection = scheduleNotchDetection;
+
     function runDetectionAfterRotation() {
-        window.setTimeout(detectNotchPosition, 100);
+        scheduleNotchDetection();
     }
 
     function runInitialDetection() {
-        // Delay one tick so CSS env values settle before first render.
-        window.setTimeout(detectNotchPosition, 0);
+        // Delay and wait for layout to ensure CSS env values are stable.
+        scheduleNotchDetection();
     }
 
     if (document.readyState === "loading") {
@@ -54,5 +93,5 @@
     }
 
     window.addEventListener("orientationchange", runDetectionAfterRotation);
-    window.addEventListener("resize", detectNotchPosition);
+    window.addEventListener("resize", scheduleNotchDetection);
 })();
