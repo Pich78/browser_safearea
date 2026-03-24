@@ -1,7 +1,7 @@
 (function () {
     "use strict";
 
-    function init() {
+    function renderMetrics() {
         if (typeof window.getScreenSize !== "function") {
             throw new Error("getScreenSize function not found.");
         }
@@ -23,10 +23,10 @@
         var outerMetrics = window.getWindowOuterSize();
         var innerMetrics = window.getWindowInnerSize();
 
-        var rawOutline = document.getElementById("raw-outline");
-        if (rawOutline) {
-            rawOutline.style.width = screenMetrics.width + "px";
-            rawOutline.style.height = screenMetrics.height + "px";
+        var innerOutline = document.getElementById("inner-outline");
+        if (innerOutline) {
+            innerOutline.style.width = innerMetrics.width + "px";
+            innerOutline.style.height = innerMetrics.height + "px";
         }
 
         var screenElement = document.getElementById("measure-screen");
@@ -53,6 +53,11 @@
         console.log("Available screen size:", availableMetrics);
         console.log("Outer window size:", outerMetrics);
         console.log("Inner window size:", innerMetrics);
+    }
+
+    function init() {
+        renderMetrics();
+        window.addEventListener("resize", renderMetrics);
     }
 
     if (document.readyState === "loading") {

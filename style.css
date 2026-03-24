@@ -12,7 +12,7 @@ body {
 	position: relative;
 }
 
-#raw-outline {
+#inner-outline {
 	position: fixed;
 	top: 0;
 	left: 0;
@@ -23,17 +23,13 @@ body {
 }
 
 main {
-	box-sizing: border-box;
 	position: fixed;
-	inset: 24px;
-	background-color: #7fff7f;
-	border: 2px solid #2e8b57;
-	display: grid;
-	place-content: center;
-	gap: 8px;
-	text-align: center;
+	top: 16px;
+	left: 16px;
+	z-index: 40;
+	background: transparent;
 	color: #000000;
-	z-index: 10;
+	text-align: left;
 }
 
 h1 {
