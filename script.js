@@ -1,6 +1,28 @@
 (function () {
     "use strict";
 
+    var lastOrientation = null;
+
+    function getOrientationLabel() {
+        return window.innerWidth > window.innerHeight ? "landscape" : "portrait";
+    }
+
+    function renderOrientationEvent(source) {
+        var currentOrientation = getOrientationLabel();
+        var transition = lastOrientation
+            ? lastOrientation + " -> " + currentOrientation
+            : "initial -> " + currentOrientation;
+        var message = "Orientation event (" + source + "): " + transition;
+
+        var orientationEventElement = document.getElementById("measure-orientation-event");
+        if (orientationEventElement) {
+            orientationEventElement.textContent = message;
+        }
+
+        console.log(message);
+        lastOrientation = currentOrientation;
+    }
+
     function getMode() {
         var params = new URLSearchParams(window.location.search);
         return params.get("mode") === "cover" ? "cover" : "auto";
@@ -168,8 +190,22 @@
     }
 
     function init() {
+        renderOrientationEvent("init");
         renderMetrics();
         window.addEventListener("resize", renderMetrics);
+
+        window.addEventListener("orientationchange", function () {
+            setTimeout(function () {
+                renderOrientationEvent("orientationchange");
+                renderMetrics();
+            }, 120);
+        });
+
+        var orientationMediaQuery = window.matchMedia("(orientation: landscape)");
+        orientationMediaQuery.addEventListener("change", function () {
+            renderOrientationEvent("media-query");
+            renderMetrics();
+        });
 
         var toggleButton = document.getElementById("toggle-mode");
         if (toggleButton) {
