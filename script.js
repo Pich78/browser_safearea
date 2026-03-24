@@ -67,6 +67,24 @@
         return typeof value === "string" && value.indexOf(prefix) === 0;
     }
 
+    function getNotchExtent(insets, notchLabel) {
+        var fallbackExtent = 24;
+
+        if (startsWith(notchLabel, "Left")) {
+            return insets.left > 0 ? insets.left : fallbackExtent;
+        }
+
+        if (startsWith(notchLabel, "Right")) {
+            return insets.right > 0 ? insets.right : fallbackExtent;
+        }
+
+        if (startsWith(notchLabel, "Top")) {
+            return insets.top > 0 ? insets.top : fallbackExtent;
+        }
+
+        return 0;
+    }
+
     function applyUsableAreaOutline(innerMetrics, insets, notchInfo, mode) {
         var innerOutline = document.getElementById("inner-outline");
         if (!innerOutline) {
@@ -81,29 +99,33 @@
         };
 
         var notchLabel = notchInfo && notchInfo.notchPosition ? notchInfo.notchPosition : "";
-        var notchLeft = insets.left;
-        var notchRight = insets.right;
-        var notchTop = insets.top;
+        var notchExtent = getNotchExtent(insets, notchLabel);
 
         // In auto mode we keep symmetry: do not reclaim either side area.
         if (mode === "auto") {
-            var symmetricInset = Math.max(notchLeft, notchRight);
-            if (symmetricInset > 0 && rect.width > symmetricInset * 2) {
-                rect.left = symmetricInset;
-                rect.width = rect.width - symmetricInset * 2;
+            if ((startsWith(notchLabel, "Left") || startsWith(notchLabel, "Right")) && notchExtent > 0) {
+                if (rect.width > notchExtent * 2) {
+                    rect.left = notchExtent;
+                    rect.width = rect.width - notchExtent * 2;
+                }
+            } else if (startsWith(notchLabel, "Top") && notchExtent > 0) {
+                if (rect.height > notchExtent * 2) {
+                    rect.top = notchExtent;
+                    rect.height = rect.height - notchExtent * 2;
+                }
             }
         }
 
         // In cover mode we exclude the notch side and reclaim the opposite side.
         if (mode === "cover") {
-            if (startsWith(notchLabel, "Left") && notchLeft > 0) {
-                rect.left = notchLeft;
-                rect.width = Math.max(0, rect.width - notchLeft);
-            } else if (startsWith(notchLabel, "Right") && notchRight > 0) {
-                rect.width = Math.max(0, rect.width - notchRight);
-            } else if (startsWith(notchLabel, "Top") && notchTop > 0) {
-                rect.top = notchTop;
-                rect.height = Math.max(0, rect.height - notchTop);
+            if (startsWith(notchLabel, "Left") && notchExtent > 0) {
+                rect.left = notchExtent;
+                rect.width = Math.max(0, rect.width - notchExtent);
+            } else if (startsWith(notchLabel, "Right") && notchExtent > 0) {
+                rect.width = Math.max(0, rect.width - notchExtent);
+            } else if (startsWith(notchLabel, "Top") && notchExtent > 0) {
+                rect.top = notchExtent;
+                rect.height = Math.max(0, rect.height - notchExtent);
             }
         }
 
