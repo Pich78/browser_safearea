@@ -8,6 +8,31 @@
         return window.innerWidth > window.innerHeight;
     }
 
+    function getOrientationAngle() {
+        if (window.screen && window.screen.orientation && typeof window.screen.orientation.angle === "number") {
+            return window.screen.orientation.angle;
+        }
+
+        if (typeof window.orientation === "number") {
+            return window.orientation;
+        }
+
+        return null;
+    }
+
+    function getLandscapeSideFromAngle() {
+        var angle = getOrientationAngle();
+        if (angle === 90) {
+            return "Right (landscape)";
+        }
+
+        if (angle === -90 || angle === 270) {
+            return "Left (landscape)";
+        }
+
+        return null;
+    }
+
     function classifyNotchSide(top, left, right) {
         if (top <= NOTCH_THRESHOLD && left <= NOTCH_THRESHOLD && right <= NOTCH_THRESHOLD) {
             return "No notch detected (or fullscreen mode not active)";
@@ -24,6 +49,11 @@
             }
 
             if (isLandscape()) {
+                var sideByAngle = getLandscapeSideFromAngle();
+                if (sideByAngle) {
+                    return sideByAngle + " (angle fallback)";
+                }
+
                 return "Ambiguous (left/right nearly equal)";
             }
         }
@@ -45,15 +75,16 @@
         var top = parseFloat(rootStyle.getPropertyValue("--safe-top")) || 0;
         var right = parseFloat(rootStyle.getPropertyValue("--safe-right")) || 0;
         var left = parseFloat(rootStyle.getPropertyValue("--safe-left")) || 0;
+        var angle = getOrientationAngle();
 
         var notchPosition = classifyNotchSide(top, left, right);
 
         var infoElement = document.getElementById("notch-info");
         if (infoElement) {
-            infoElement.textContent = "Notch position: " + notchPosition + " (Top: " + top.toFixed(1) + ", Left: " + left.toFixed(1) + ", Right: " + right.toFixed(1) + ")";
+            infoElement.textContent = "Notch position: " + notchPosition + " (Top: " + top.toFixed(1) + ", Left: " + left.toFixed(1) + ", Right: " + right.toFixed(1) + ", Angle: " + (angle === null ? "n/a" : angle) + ")";
         }
 
-        console.log("Notch position:", notchPosition, { top: top, left: left, right: right });
+        console.log("Notch position:", notchPosition, { top: top, left: left, right: right, angle: angle });
 
         return {
             notchPosition: notchPosition,
