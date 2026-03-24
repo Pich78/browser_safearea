@@ -2,12 +2,12 @@
     "use strict";
 
     function collectScreenArea() {
-        var width = window.screen.width;
-        var height = window.screen.height;
+        var width = window.innerWidth;
+        var height = window.innerHeight;
 
         var sizeElement = document.getElementById("screen-size");
         if (sizeElement) {
-            sizeElement.textContent = "Screen size: " + width + " x " + height + " px";
+            sizeElement.textContent = "Screen size (viewport): " + width + " x " + height + " px";
         }
 
         return {

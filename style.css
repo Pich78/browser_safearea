@@ -1,29 +1,36 @@
 html,
 body {
 	margin: 0;
+	width: 100%;
 	min-height: 100vh;
 }
 
 body {
-	background-color: #1a1a1a;
-	display: grid;
-	place-items: center;
+	background-color: #ffffff;
+	font-family: Arial, sans-serif;
 }
 
 main {
-	font-family: Arial, sans-serif;
+	box-sizing: border-box;
+	width: calc(100vw - 48px);
+	min-height: calc(100vh - 48px);
+	margin: 24px;
+	background-color: #7fff7f;
+	border: 2px solid #2e8b57;
+	display: grid;
+	place-content: center;
+	gap: 8px;
 	text-align: center;
-}
-
-h1 {
-	color: #ffffff;
+	color: #000000;
 }
 
 #raw-area {
-	color: #ffffff;
+	color: #000000;
+	margin: 0;
 }
 
 #screen-size {
-	color: #00ff00;
+	color: #000000;
+	margin: 0;
 }
 
