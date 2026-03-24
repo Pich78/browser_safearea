@@ -71,6 +71,120 @@
         };
     }
 
+    function detectDeviceModel() {
+        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+
+        if (/iPhone|iPad|iPod/.test(userAgent) && !window.MSStream) {
+            return /iPad/.test(userAgent) ? 'iPad' : 'iPhone';
+        }
+        if (/SamsungBrowser|SM-|GT-|Samsung/i.test(userAgent)) {
+            return 'Samsung';
+        }
+        if (/Android/.test(userAgent)) {
+            if (/Pixel/i.test(userAgent)) {
+                return 'Google Pixel';
+            }
+            if (/OnePlus/i.test(userAgent)) {
+                return 'OnePlus';
+            }
+            if (/HUAWEI|HONOR/i.test(userAgent)) {
+                return 'Huawei';
+            }
+            if (/Xiaomi|Redmi|Mi\s/i.test(userAgent)) {
+                return 'Xiaomi';
+            }
+            return 'Android';
+        }
+        if (/Macintosh/.test(userAgent) && navigator.maxTouchPoints > 1) {
+            return 'iPad (Desktop Mode)';
+        }
+        if (/Windows Phone/.test(userAgent)) {
+            return 'Windows Phone';
+        }
+        if (!/Mobi|Tablet|iPad|iPhone|iPod/.test(userAgent)) {
+            return 'Desktop';
+        }
+        return 'Unknown';
+    }
+
+    function detectBrowserInfo() {
+        const ua = navigator.userAgent;
+        let match;
+
+        match = ua.match(/Edg\/(\d+(?:\.\d+)?)/);
+        if (match) return `Edge ${match[1]}`;
+
+        match = ua.match(/OPR\/(\d+(?:\.\d+)?)/);
+        if (match) return `Opera ${match[1]}`;
+
+        match = ua.match(/SamsungBrowser\/(\d+(?:\.\d+)?)/);
+        if (match) return `Samsung Internet ${match[1]}`;
+
+        match = ua.match(/Chrome\/(\d+(?:\.\d+)?)/);
+        if (match && !/Edg\//.test(ua) && !/OPR\//.test(ua)) return `Chrome ${match[1]}`;
+
+        match = ua.match(/Version\/(\d+(?:\.\d+)?).*Safari/);
+        if (match && !/Chrome|Chromium|CriOS/.test(ua)) return `Safari ${match[1]}`;
+
+        match = ua.match(/Firefox\/(\d+(?:\.\d+)?)/);
+        if (match) return `Firefox ${match[1]}`;
+
+        return 'Unknown';
+    }
+
+    function getMaximumScreenArea() {
+        const dpr = window.devicePixelRatio || 1;
+        const widthPx = Math.round(window.screen.width * dpr);
+        const heightPx = Math.round(window.screen.height * dpr);
+        const pixelCount = widthPx * heightPx;
+
+        return {
+            widthPx,
+            heightPx,
+            pixelCount
+        };
+    }
+
+    function getNotchPosition(insets, orientation) {
+        const edges = [
+            { edge: 'top', value: insets.top },
+            { edge: 'right', value: insets.right },
+            { edge: 'bottom', value: insets.bottom },
+            { edge: 'left', value: insets.left }
+        ];
+        edges.sort((a, b) => b.value - a.value);
+
+        const strongest = edges[0];
+        if (!strongest || strongest.value <= 0) {
+            return 'none';
+        }
+
+        if (orientation === 'portrait') {
+            if (strongest.edge === 'top') return 'up';
+            if (strongest.edge === 'bottom') return 'down';
+            if (strongest.edge === 'left') return 'left';
+            return 'right';
+        }
+
+        if (strongest.edge === 'left') return 'left';
+        if (strongest.edge === 'right') return 'right';
+        if (strongest.edge === 'top') return 'up';
+        return 'down';
+    }
+
+    function getRuntimeInfo(insets) {
+        const orientation = getOrientation();
+        const safeInsets = insets || readSafeAreaInsets();
+
+        return {
+            deviceModel: detectDeviceModel(),
+            browserInfo: detectBrowserInfo(),
+            maxScreenArea: getMaximumScreenArea(),
+            orientation,
+            notchPosition: getNotchPosition(safeInsets, orientation)
+        };
+    }
+
     function getState() {
         const mode = getModeFromUrl();
         const insets = readSafeAreaInsets();
@@ -134,6 +248,7 @@
         return {
             init,
             getState,
+            getRuntimeInfo,
             onChange,
             notify,
             applyPadding,
