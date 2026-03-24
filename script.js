@@ -28,6 +28,9 @@
 
     function renderRuntimeInfo(state) {
         const runtimeInfo = SafeAreaComponent.getRuntimeInfo(state.insets);
+        const notchPosition = typeof window.detectNotchPosition === 'function'
+            ? window.detectNotchPosition()
+            : 'none';
         const screenWidth = window.screen.width;
         const screenHeight = window.screen.height;
         const innerWidth = window.innerWidth;
@@ -38,10 +41,12 @@
         elements.browserInfo.textContent = runtimeInfo.browserInfo;
         elements.maxScreenArea.textContent = `${runtimeInfo.maxScreenArea.widthPx}x${runtimeInfo.maxScreenArea.heightPx} (${runtimeInfo.maxScreenArea.pixelCount.toLocaleString()} px)`;
         elements.orientation.textContent = runtimeInfo.orientation;
-        elements.notchPosition.textContent = runtimeInfo.notchPosition;
+        elements.notchPosition.textContent = notchPosition;
         elements.screenSize.textContent = `${screenWidth}x${screenHeight}`;
         elements.windowSize.textContent = `${innerWidth}x${innerHeight}`;
         elements.dpr.textContent = dpr;
+
+        console.log(`[SafeArea] Notch position: ${notchPosition}`);
     }
 
     function renderStatus() {

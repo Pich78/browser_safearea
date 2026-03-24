@@ -145,43 +145,20 @@
         };
     }
 
-    function getNotchPosition(insets, orientation) {
-        const edges = [
-            { edge: 'top', value: insets.top },
-            { edge: 'right', value: insets.right },
-            { edge: 'bottom', value: insets.bottom },
-            { edge: 'left', value: insets.left }
-        ];
-        edges.sort((a, b) => b.value - a.value);
-
-        const strongest = edges[0];
-        if (!strongest || strongest.value <= 0) {
-            return 'none';
-        }
-
-        if (orientation === 'portrait') {
-            if (strongest.edge === 'top') return 'up';
-            if (strongest.edge === 'bottom') return 'down';
-            if (strongest.edge === 'left') return 'left';
-            return 'right';
-        }
-
-        if (strongest.edge === 'left') return 'left';
-        if (strongest.edge === 'right') return 'right';
-        if (strongest.edge === 'top') return 'up';
-        return 'down';
-    }
-
     function getRuntimeInfo(insets) {
         const orientation = getOrientation();
         const safeInsets = insets || readSafeAreaInsets();
+        const notchPosition = typeof window.detectNotchPosition === 'function'
+            ? window.detectNotchPosition()
+            : 'none';
 
         return {
             deviceModel: detectDeviceModel(),
             browserInfo: detectBrowserInfo(),
             maxScreenArea: getMaximumScreenArea(),
             orientation,
-            notchPosition: getNotchPosition(safeInsets, orientation)
+            notchPosition,
+            insets: safeInsets
         };
     }
 
