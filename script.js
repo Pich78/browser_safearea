@@ -63,7 +63,7 @@
         document.body.classList.toggle("mode-cover", mode === "cover");
     }
 
-    function applyInnerOutline(innerMetrics, insets, mode) {
+    function applyUsableAreaOutline(innerMetrics, notchInfo, mode) {
         var innerOutline = document.getElementById("inner-outline");
         if (!innerOutline) {
             return;
@@ -73,15 +73,15 @@
         var height = innerMetrics.height;
         var left = 0;
         var top = 0;
-        var isLandscape = innerMetrics.width > innerMetrics.height;
 
-        if (mode === "cover" && isLandscape) {
-            if (insets.left > insets.right) {
-                width += insets.left - insets.right;
-            } else if (insets.right > insets.left) {
-                var extension = insets.right - insets.left;
-                width += extension;
-                left -= extension;
+        if (mode === "cover" && notchInfo) {
+            if (notchInfo.notchPosition.indexOf("Left") === 0) {
+                width += notchInfo.left;
+            } else if (notchInfo.notchPosition.indexOf("Right") === 0) {
+                width += notchInfo.right;
+                left -= notchInfo.right;
+            } else if (notchInfo.notchPosition.indexOf("Top") === 0) {
+                height += notchInfo.top;
             }
         }
 
@@ -132,8 +132,13 @@
         var outerMetrics = window.getWindowOuterSize();
         var innerMetrics = window.getWindowInnerSize();
         var insets = window.getSafeAreaInsets();
+        var notchInfo = null;
 
-        applyInnerOutline(innerMetrics, insets, mode);
+        if (typeof window.detectNotchPosition === "function") {
+            notchInfo = window.detectNotchPosition();
+        }
+
+        applyUsableAreaOutline(innerMetrics, notchInfo, mode);
 
         var screenElement = document.getElementById("measure-screen");
         if (screenElement) {
@@ -157,8 +162,6 @@
 
         if (typeof window.scheduleNotchDetection === "function") {
             window.scheduleNotchDetection();
-        } else if (typeof window.detectNotchPosition === "function") {
-            window.detectNotchPosition();
         }
 
         console.log("Safe-area insets:", insets);
