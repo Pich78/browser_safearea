@@ -17,74 +17,138 @@
         insetLeft: document.getElementById('insetLeft'),
         orientation: document.getElementById('orientation'),
         deviceType: document.getElementById('deviceType'),
+        browserInfo: document.getElementById('browserInfo'),
+        maxScreenArea: document.getElementById('maxScreenArea'),
+        notchPosition: document.getElementById('notchPosition'),
         screenSize: document.getElementById('screenSize'),
         windowSize: document.getElementById('windowSize'),
         dpr: document.getElementById('dpr'),
         toggleBtn: document.getElementById('toggleBtn')
     };
 
-    function getDeviceInfo() {
+    function detectDeviceModel() {
         const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+        if (/iPhone|iPad|iPod/.test(userAgent) && !window.MSStream) {
+            return /iPad/.test(userAgent) ? 'iPad' : 'iPhone';
+        }
+        if (/SamsungBrowser|SM-|GT-|Samsung/i.test(userAgent)) {
+            return 'Samsung';
+        }
+        if (/Android/.test(userAgent)) {
+            if (/Pixel/i.test(userAgent)) {
+                return 'Google Pixel';
+            }
+            if (/OnePlus/i.test(userAgent)) {
+                return 'OnePlus';
+            }
+            if (/HUAWEI|HONOR/i.test(userAgent)) {
+                return 'Huawei';
+            }
+            if (/Xiaomi|Redmi|Mi\s/i.test(userAgent)) {
+                return 'Xiaomi';
+            }
+            return 'Android';
+        }
+        if (/Macintosh/.test(userAgent) && navigator.maxTouchPoints > 1) {
+            return 'iPad (Desktop Mode)';
+        }
+        if (/Windows Phone/.test(userAgent)) {
+            return 'Windows Phone';
+        }
+        if (!/Mobi|Tablet|iPad|iPhone|iPod/.test(userAgent)) {
+            return 'Desktop';
+        }
+        return 'Unknown';
+    }
+
+    function detectBrowserInfo() {
+        const ua = navigator.userAgent;
+        let match;
+
+        match = ua.match(/Edg\/(\d+(?:\.\d+)?)/);
+        if (match) return `Edge ${match[1]}`;
+
+        match = ua.match(/OPR\/(\d+(?:\.\d+)?)/);
+        if (match) return `Opera ${match[1]}`;
+
+        match = ua.match(/SamsungBrowser\/(\d+(?:\.\d+)?)/);
+        if (match) return `Samsung Internet ${match[1]}`;
+
+        match = ua.match(/Chrome\/(\d+(?:\.\d+)?)/);
+        if (match && !/Edg\//.test(ua) && !/OPR\//.test(ua)) return `Chrome ${match[1]}`;
+
+        match = ua.match(/Version\/(\d+(?:\.\d+)?).*Safari/);
+        if (match && !/Chrome|Chromium|CriOS/.test(ua)) return `Safari ${match[1]}`;
+
+        match = ua.match(/Firefox\/(\d+(?:\.\d+)?)/);
+        if (match) return `Firefox ${match[1]}`;
+
+        return 'Unknown';
+    }
+
+    function getMaximumScreenArea() {
+        const dpr = window.devicePixelRatio || 1;
+        const widthPx = Math.round(window.screen.width * dpr);
+        const heightPx = Math.round(window.screen.height * dpr);
+        const pixelCount = widthPx * heightPx;
+        return {
+            widthPx,
+            heightPx,
+            pixelCount
+        };
+    }
+
+    function getCurrentOrientation() {
+        return window.matchMedia('(orientation: portrait)').matches ? 'portrait' : 'landscape';
+    }
+
+    function getNotchPosition(insets, orientation) {
+        const edges = [
+            { edge: 'top', value: insets.top },
+            { edge: 'right', value: insets.right },
+            { edge: 'bottom', value: insets.bottom },
+            { edge: 'left', value: insets.left }
+        ];
+        edges.sort((a, b) => b.value - a.value);
+
+        const strongest = edges[0];
+        if (!strongest || strongest.value <= 0) {
+            return 'none';
+        }
+
+        if (orientation === 'portrait') {
+            if (strongest.edge === 'top') return 'up';
+            if (strongest.edge === 'bottom') return 'down';
+            if (strongest.edge === 'left') return 'left';
+            return 'right';
+        }
+
+        if (strongest.edge === 'left') return 'left';
+        if (strongest.edge === 'right') return 'right';
+        if (strongest.edge === 'top') return 'up';
+        return 'down';
+    }
+
+    function renderRuntimeInfo(state) {
+        const device = detectDeviceModel();
+        const browser = detectBrowserInfo();
+        const orientation = getCurrentOrientation();
+        const notchPosition = getNotchPosition(state.insets, orientation);
+        const maxArea = getMaximumScreenArea();
         const screenWidth = window.screen.width;
         const screenHeight = window.screen.height;
-        const availWidth = window.screen.availWidth;
-        const availHeight = window.screen.availHeight;
         const innerWidth = window.innerWidth;
         const innerHeight = window.innerHeight;
         const dpr = window.devicePixelRatio || 1;
 
-        let device = 'Unknown';
-        
-        if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
-            if (/iPad/.test(userAgent)) {
-                device = 'iPad';
-            } else if (/iPhone/.test(userAgent)) {
-                if (userAgent.includes('iPhone 14 Pro')) {
-                    device = 'iPhone 14 Pro';
-                } else if (userAgent.includes('iPhone 14')) {
-                    device = 'iPhone 14';
-                } else if (userAgent.includes('iPhone 13')) {
-                    device = 'iPhone 13';
-                } else if (userAgent.includes('iPhone 12')) {
-                    device = 'iPhone 12';
-                } else if (userAgent.includes('iPhone 11')) {
-                    device = 'iPhone 11';
-                } else if (userAgent.includes('SE')) {
-                    device = 'iPhone SE';
-                } else {
-                    device = 'iPhone';
-                }
-            }
-        } else if (/Android/.test(userAgent)) {
-            device = 'Android';
-            if (/Mobile/.test(userAgent)) {
-                device = 'Android Phone';
-            } else {
-                device = 'Android Tablet';
-            }
-        } else if (/Windows Phone/.test(userAgent)) {
-            device = 'Windows Phone';
-        } else if (/Macintosh/.test(userAgent) && navigator.maxTouchPoints > 1) {
-            device = 'iPad (Desktop Mode)';
-        } else if (!/Mobi|Tablet|iPad|iPhone|iPod/.test(userAgent)) {
-            device = 'Desktop';
-        }
-
         elements.deviceType.textContent = device;
+        elements.browserInfo.textContent = browser;
+        elements.maxScreenArea.textContent = `${maxArea.widthPx}x${maxArea.heightPx} (${maxArea.pixelCount.toLocaleString()} px)`;
+        elements.orientation.textContent = orientation;
+        elements.notchPosition.textContent = notchPosition;
         elements.screenSize.textContent = `${screenWidth}x${screenHeight}`;
         elements.windowSize.textContent = `${innerWidth}x${innerHeight}`;
         elements.dpr.textContent = dpr;
-
-        return {
-            device,
-            screenWidth,
-            screenHeight,
-            availWidth,
-            availHeight,
-            innerWidth,
-            innerHeight,
-            devicePixelRatio: dpr
-        };
     }
 
     function renderStatus() {
@@ -96,9 +160,14 @@
         elements.insetRight.textContent = Math.round(state.insets.right);
         elements.insetBottom.textContent = Math.round(state.insets.bottom);
         elements.insetLeft.textContent = Math.round(state.insets.left);
-        elements.orientation.textContent = state.orientation;
 
         return state;
+    }
+
+    function refreshView() {
+        const state = renderStatus();
+        renderRuntimeInfo(state);
+        SafeAreaComponent.notify();
     }
 
     function toggleCase() {
@@ -109,30 +178,23 @@
 
     function init() {
         SafeAreaComponent.init();
-        renderStatus();
-        getDeviceInfo();
+        refreshView();
 
         elements.toggleBtn.addEventListener('click', toggleCase);
 
         window.addEventListener('orientationchange', () => {
             setTimeout(() => {
-                renderStatus();
-                getDeviceInfo();
-                SafeAreaComponent.notify();
+                refreshView();
             }, 100);
         });
 
         window.addEventListener('resize', () => {
-            renderStatus();
-            getDeviceInfo();
-            SafeAreaComponent.notify();
+            refreshView();
         });
 
         const mediaQuery = window.matchMedia('(orientation: landscape)');
         mediaQuery.addEventListener('change', () => {
-            renderStatus();
-            getDeviceInfo();
-            SafeAreaComponent.notify();
+            refreshView();
         });
     }
 
