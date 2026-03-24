@@ -63,32 +63,54 @@
         document.body.classList.toggle("mode-cover", mode === "cover");
     }
 
-    function applyUsableAreaOutline(innerMetrics, notchInfo, mode) {
+    function startsWith(value, prefix) {
+        return typeof value === "string" && value.indexOf(prefix) === 0;
+    }
+
+    function applyUsableAreaOutline(innerMetrics, insets, notchInfo, mode) {
         var innerOutline = document.getElementById("inner-outline");
         if (!innerOutline) {
             return;
         }
 
-        var width = innerMetrics.width;
-        var height = innerMetrics.height;
-        var left = 0;
-        var top = 0;
+        var rect = {
+            left: 0,
+            top: 0,
+            width: innerMetrics.width,
+            height: innerMetrics.height
+        };
 
-        if (mode === "cover" && notchInfo) {
-            if (notchInfo.notchPosition.indexOf("Left") === 0) {
-                width += notchInfo.left;
-            } else if (notchInfo.notchPosition.indexOf("Right") === 0) {
-                width += notchInfo.right;
-                left -= notchInfo.right;
-            } else if (notchInfo.notchPosition.indexOf("Top") === 0) {
-                height += notchInfo.top;
+        var notchLabel = notchInfo && notchInfo.notchPosition ? notchInfo.notchPosition : "";
+        var notchLeft = insets.left;
+        var notchRight = insets.right;
+        var notchTop = insets.top;
+
+        // In auto mode we keep symmetry: do not reclaim either side area.
+        if (mode === "auto") {
+            var symmetricInset = Math.max(notchLeft, notchRight);
+            if (symmetricInset > 0 && rect.width > symmetricInset * 2) {
+                rect.left = symmetricInset;
+                rect.width = rect.width - symmetricInset * 2;
             }
         }
 
-        innerOutline.style.left = left + "px";
-        innerOutline.style.top = top + "px";
-        innerOutline.style.width = width + "px";
-        innerOutline.style.height = height + "px";
+        // In cover mode we exclude the notch side and reclaim the opposite side.
+        if (mode === "cover") {
+            if (startsWith(notchLabel, "Left") && notchLeft > 0) {
+                rect.left = notchLeft;
+                rect.width = Math.max(0, rect.width - notchLeft);
+            } else if (startsWith(notchLabel, "Right") && notchRight > 0) {
+                rect.width = Math.max(0, rect.width - notchRight);
+            } else if (startsWith(notchLabel, "Top") && notchTop > 0) {
+                rect.top = notchTop;
+                rect.height = Math.max(0, rect.height - notchTop);
+            }
+        }
+
+        innerOutline.style.left = rect.left + "px";
+        innerOutline.style.top = rect.top + "px";
+        innerOutline.style.width = rect.width + "px";
+        innerOutline.style.height = rect.height + "px";
     }
 
     function toggleMode() {
@@ -138,7 +160,7 @@
             notchInfo = window.detectNotchPosition();
         }
 
-        applyUsableAreaOutline(innerMetrics, notchInfo, mode);
+        applyUsableAreaOutline(innerMetrics, insets, notchInfo, mode);
 
         var screenElement = document.getElementById("measure-screen");
         if (screenElement) {
