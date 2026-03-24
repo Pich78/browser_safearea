@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta id="viewportMeta" name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Browser Area Test</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -10,6 +10,9 @@
     <div id="inner-outline" aria-hidden="true"></div>
     <main>
         <h1>Screen Area Detector</h1>
+        <p id="mode-state" class="measure">Mode: auto (safe-area symmetry)</p>
+        <button id="toggle-mode" type="button">Switch To viewport-fit=cover</button>
+        <p id="measure-notch" class="measure">Notch side: loading...</p>
         <p id="measure-screen" class="measure">Loading...</p>
         <p id="measure-avail" class="measure">Loading...</p>
         <p id="measure-outer" class="measure">Loading...</p>
@@ -20,6 +23,7 @@
     <script src="screen-available-size.js"></script>
     <script src="window-outer-size.js"></script>
     <script src="window-inner-size.js"></script>
+    <script src="safe-area-insets.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
