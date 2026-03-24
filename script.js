@@ -2,7 +2,9 @@
     'use strict';
 
     const viewportMeta = document.querySelector('meta[name="viewport"]');
-    let isCoverMode = true;
+    const url = new URL(window.location.href);
+    const fitParam = url.searchParams.get('fit');
+    let isCoverMode = fitParam !== 'auto';
 
     const elements = {
         statusMain: document.getElementById('statusMain'),
@@ -95,11 +97,11 @@
 
     function updateSafeAreaInsets() {
         const computedStyle = getComputedStyle(document.documentElement);
-        
-        const top = computedStyle.getPropertyValue('safe-area-inset-top').trim();
-        const right = computedStyle.getPropertyValue('safe-area-inset-right').trim();
-        const bottom = computedStyle.getPropertyValue('safe-area-inset-bottom').trim();
-        const left = computedStyle.getPropertyValue('safe-area-inset-left').trim();
+
+        const top = computedStyle.getPropertyValue('--safe-area-top').trim();
+        const right = computedStyle.getPropertyValue('--safe-area-right').trim();
+        const bottom = computedStyle.getPropertyValue('--safe-area-bottom').trim();
+        const left = computedStyle.getPropertyValue('--safe-area-left').trim();
 
         const topPx = top ? parseInt(top) : 0;
         const rightPx = right ? parseInt(right) : 0;
@@ -116,21 +118,29 @@
 
     function toggleViewportFit() {
         isCoverMode = !isCoverMode;
-        
-        const newContent = isCoverMode 
+
+        const nextUrl = new URL(window.location.href);
+        if (isCoverMode) {
+            nextUrl.searchParams.delete('fit');
+        } else {
+            nextUrl.searchParams.set('fit', 'auto');
+        }
+
+        // A reload makes viewport meta changes deterministic across mobile browsers.
+        window.location.href = nextUrl.toString();
+    }
+
+    function applyViewportFitMode() {
+        const newContent = isCoverMode
             ? 'width=device-width, initial-scale=1.0, viewport-fit=cover'
             : 'width=device-width, initial-scale=1.0';
-        
+
         viewportMeta.setAttribute('content', newContent);
         elements.statusMain.textContent = `Status: viewport-fit=${isCoverMode ? 'cover' : 'auto'}`;
-        
-        setTimeout(() => {
-            updateSafeAreaInsets();
-            getDeviceInfo();
-        }, 100);
     }
 
     function init() {
+        applyViewportFitMode();
         updateSafeAreaInsets();
         getOrientation();
         getDeviceInfo();
