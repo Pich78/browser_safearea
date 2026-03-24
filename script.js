@@ -10,13 +10,13 @@
             throw new Error("collectScreenArea function not found.");
         }
 
-        var rawArea = window.getRawScreenArea();
+        var rawMetrics = window.getRawScreenArea();
         var rawAreaElement = document.getElementById("raw-area");
         if (rawAreaElement) {
-            rawAreaElement.textContent = "Raw area: " + rawArea.toLocaleString() + " px";
+            rawAreaElement.textContent = "Raw area: " + rawMetrics.area.toLocaleString() + " px (" + rawMetrics.width + " x " + rawMetrics.height + " px)";
         }
 
-        console.log("Raw screen area (px):", rawArea);
+        console.log("Raw screen metrics:", rawMetrics);
         window.collectScreenArea();
     }
 

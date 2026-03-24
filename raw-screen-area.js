@@ -2,7 +2,14 @@
     "use strict";
 
     function getRawScreenArea() {
-        return window.screen.width * window.screen.height;
+        var width = window.screen.width;
+        var height = window.screen.height;
+
+        return {
+            width: width,
+            height: height,
+            area: width * height
+        };
     }
 
     window.getRawScreenArea = getRawScreenArea;
