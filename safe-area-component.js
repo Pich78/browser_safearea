@@ -54,14 +54,6 @@
         return insets;
     }
 
-    function getOrientation() {
-        return window.matchMedia('(orientation: portrait)').matches
-            ? 'portrait'
-            : window.matchMedia('(orientation: landscape)').matches
-                ? 'landscape'
-                : 'square';
-    }
-
     function computeSafeRect(insets) {
         return {
             x: insets.left,
@@ -107,31 +99,6 @@
         return 'Unknown';
     }
 
-    function detectBrowserInfo() {
-        const ua = navigator.userAgent;
-        let match;
-
-        match = ua.match(/Edg\/(\d+(?:\.\d+)?)/);
-        if (match) return `Edge ${match[1]}`;
-
-        match = ua.match(/OPR\/(\d+(?:\.\d+)?)/);
-        if (match) return `Opera ${match[1]}`;
-
-        match = ua.match(/SamsungBrowser\/(\d+(?:\.\d+)?)/);
-        if (match) return `Samsung Internet ${match[1]}`;
-
-        match = ua.match(/Chrome\/(\d+(?:\.\d+)?)/);
-        if (match && !/Edg\//.test(ua) && !/OPR\//.test(ua)) return `Chrome ${match[1]}`;
-
-        match = ua.match(/Version\/(\d+(?:\.\d+)?).*Safari/);
-        if (match && !/Chrome|Chromium|CriOS/.test(ua)) return `Safari ${match[1]}`;
-
-        match = ua.match(/Firefox\/(\d+(?:\.\d+)?)/);
-        if (match) return `Firefox ${match[1]}`;
-
-        return 'Unknown';
-    }
-
     function getMaximumScreenArea() {
         const dpr = window.devicePixelRatio || 1;
         const widthPx = Math.round(window.screen.width * dpr);
@@ -173,12 +140,16 @@
     }
 
     function getRuntimeInfo(insets) {
-        const orientation = getOrientation();
+        const orientation = typeof window.detectOrientation === 'function'
+            ? window.detectOrientation()
+            : 'square';
         const safeInsets = insets || readSafeAreaInsets();
 
         return {
             deviceModel: detectDeviceModel(),
-            browserInfo: detectBrowserInfo(),
+            browserInfo: typeof window.detectBrowserInfo === 'function'
+                ? window.detectBrowserInfo()
+                : 'Unknown',
             maxScreenArea: getMaximumScreenArea(),
             orientation,
             notchPosition: getNotchPosition(safeInsets, orientation)
@@ -195,7 +166,9 @@
                 : 'Case 1: Browser-managed (viewport-fit=auto/default)',
             insets,
             safeRect: computeSafeRect(insets),
-            orientation: getOrientation(),
+            orientation: typeof window.detectOrientation === 'function'
+                ? window.detectOrientation()
+                : 'square',
             screen: {
                 width: window.screen.width,
                 height: window.screen.height
