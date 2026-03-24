@@ -23,11 +23,11 @@
     function getLandscapeSideFromAngle() {
         var angle = getOrientationAngle();
         if (angle === 90) {
-            return "Right (landscape)";
+            return "Left (landscape)";
         }
 
         if (angle === -90 || angle === 270) {
-            return "Left (landscape)";
+            return "Right (landscape)";
         }
 
         return null;
