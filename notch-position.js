@@ -34,28 +34,27 @@
     }
 
     function classifyNotchSide(top, left, right) {
-        if (top <= NOTCH_THRESHOLD && left <= NOTCH_THRESHOLD && right <= NOTCH_THRESHOLD) {
-            return "No notch detected (or fullscreen mode not active)";
+        if (isLandscape()) {
+            var sideDiff = left - right;
+
+            if ((left > NOTCH_THRESHOLD || right > NOTCH_THRESHOLD) && Math.abs(sideDiff) > SIDE_DELTA_THRESHOLD) {
+                return sideDiff > 0 ? "Left (landscape)" : "Right (landscape)";
+            }
+
+            var sideByAngle = getLandscapeSideFromAngle();
+            if (sideByAngle) {
+                return sideByAngle + " (orientation)";
+            }
+
+            return "Landscape (side unavailable)";
         }
 
         if (top > NOTCH_THRESHOLD && top >= left + SIDE_DELTA_THRESHOLD && top >= right + SIDE_DELTA_THRESHOLD) {
             return "Top (portrait)";
         }
 
-        if (left > NOTCH_THRESHOLD || right > NOTCH_THRESHOLD) {
-            var diff = left - right;
-            if (Math.abs(diff) > SIDE_DELTA_THRESHOLD) {
-                return diff > 0 ? "Left (landscape)" : "Right (landscape)";
-            }
-
-            if (isLandscape()) {
-                var sideByAngle = getLandscapeSideFromAngle();
-                if (sideByAngle) {
-                    return sideByAngle + " (angle fallback)";
-                }
-
-                return "Ambiguous (left/right nearly equal)";
-            }
+        if (left <= NOTCH_THRESHOLD && right <= NOTCH_THRESHOLD && top <= NOTCH_THRESHOLD) {
+            return "No notch detected (or fullscreen mode not active)";
         }
 
         if (left > right) {
