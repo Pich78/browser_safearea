@@ -2,29 +2,57 @@
     "use strict";
 
     function init() {
-        if (typeof window.getRawScreenArea !== "function") {
-            throw new Error("getRawScreenArea function not found.");
+        if (typeof window.getScreenSize !== "function") {
+            throw new Error("getScreenSize function not found.");
         }
 
-        if (typeof window.collectScreenArea !== "function") {
-            throw new Error("collectScreenArea function not found.");
+        if (typeof window.getScreenAvailableSize !== "function") {
+            throw new Error("getScreenAvailableSize function not found.");
         }
 
-        var rawMetrics = window.getRawScreenArea();
+        if (typeof window.getWindowOuterSize !== "function") {
+            throw new Error("getWindowOuterSize function not found.");
+        }
+
+        if (typeof window.getWindowInnerSize !== "function") {
+            throw new Error("getWindowInnerSize function not found.");
+        }
+
+        var screenMetrics = window.getScreenSize();
+        var availableMetrics = window.getScreenAvailableSize();
+        var outerMetrics = window.getWindowOuterSize();
+        var innerMetrics = window.getWindowInnerSize();
 
         var rawOutline = document.getElementById("raw-outline");
         if (rawOutline) {
-            rawOutline.style.width = rawMetrics.width + "px";
-            rawOutline.style.height = rawMetrics.height + "px";
+            rawOutline.style.width = screenMetrics.width + "px";
+            rawOutline.style.height = screenMetrics.height + "px";
         }
 
-        var rawAreaElement = document.getElementById("raw-area");
-        if (rawAreaElement) {
-            rawAreaElement.textContent = "Raw area: " + rawMetrics.area.toLocaleString() + " px (" + rawMetrics.width + " x " + rawMetrics.height + " px)";
+        var screenElement = document.getElementById("measure-screen");
+        if (screenElement) {
+            screenElement.textContent = "window.screen.width / window.screen.height: " + screenMetrics.width + " x " + screenMetrics.height + " px";
         }
 
-        console.log("Raw screen metrics:", rawMetrics);
-        window.collectScreenArea();
+        var availElement = document.getElementById("measure-avail");
+        if (availElement) {
+            availElement.textContent = "window.screen.availWidth / window.screen.availHeight: " + availableMetrics.width + " x " + availableMetrics.height + " px";
+        }
+
+        var outerElement = document.getElementById("measure-outer");
+        if (outerElement) {
+            outerElement.textContent = "window.outerWidth / window.outerHeight: " + outerMetrics.width + " x " + outerMetrics.height + " px";
+        }
+
+        var innerElement = document.getElementById("measure-inner");
+        if (innerElement) {
+            innerElement.textContent = "window.innerWidth / window.innerHeight: " + innerMetrics.width + " x " + innerMetrics.height + " px";
+        }
+
+        console.log("Screen size:", screenMetrics);
+        console.log("Available screen size:", availableMetrics);
+        console.log("Outer window size:", outerMetrics);
+        console.log("Inner window size:", innerMetrics);
     }
 
     if (document.readyState === "loading") {

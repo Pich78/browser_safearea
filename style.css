@@ -40,12 +40,7 @@ h1 {
 	margin: 0;
 }
 
-#raw-area {
-	color: #000000;
-	margin: 0;
-}
-
-#screen-size {
+.measure {
 	color: #000000;
 	margin: 0;
 }
