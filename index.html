@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Browser Safe Area Test</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="background-pattern"></div>
+    
+    <div class="safe-area-wrapper">
+        <div class="edge-element top-edge">TOP</div>
+        <div class="edge-element right-edge">RIGHT</div>
+        <div class="edge-element bottom-edge">BOTTOM</div>
+        <div class="edge-element left-edge">LEFT</div>
+    </div>
+
+    <div class="center-panel">
+        <div class="status-display">
+            <div class="status-main" id="statusMain">Status: viewport-fit=cover</div>
+            <div class="divider"></div>
+            <div class="safe-area-title">Safe Area Insets:</div>
+            <div class="safe-area-values">
+                <span>Top: <strong id="insetTop">0</strong>px</span>
+                <span>Right: <strong id="insetRight">0</strong>px</span>
+                <span>Bottom: <strong id="insetBottom">0</strong>px</span>
+                <span>Left: <strong id="insetLeft">0</strong>px</span>
+            </div>
+            <div class="divider"></div>
+            <div class="device-info">
+                <div>Orientation: <strong id="orientation">portrait</strong></div>
+                <div>Device: <strong id="deviceType">-</strong></div>
+                <div>Screen: <strong id="screenSize">-</strong></div>
+                <div>Window: <strong id="windowSize">-</strong></div>
+                <div>DPR: <strong id="dpr">-</strong></div>
+            </div>
+            <div class="divider"></div>
+            <button class="toggle-button" id="toggleBtn">TOGGLE VIEWPORT-FIT</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
