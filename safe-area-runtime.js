@@ -31,6 +31,37 @@
     }
 
     function readSafeAreaInsets() {
+        const parsePx = (value) => {
+            const parsed = parseFloat(value);
+            return Number.isFinite(parsed) ? parsed : 0;
+        };
+
+        const normalizeInsets = (raw) => {
+            const insets = raw || {};
+            return {
+                top: parsePx(insets.top),
+                right: parsePx(insets.right),
+                bottom: parsePx(insets.bottom),
+                left: parsePx(insets.left)
+            };
+        };
+
+        const hasPositiveInset = (insets) => (
+            insets.top > 0 || insets.right > 0 || insets.bottom > 0 || insets.left > 0
+        );
+
+        const rootStyles = getComputedStyle(document.documentElement);
+        const cssInsets = normalizeInsets({
+            top: rootStyles.getPropertyValue('--safe-area-top'),
+            right: rootStyles.getPropertyValue('--safe-area-right'),
+            bottom: rootStyles.getPropertyValue('--safe-area-bottom'),
+            left: rootStyles.getPropertyValue('--safe-area-left')
+        });
+
+        if (hasPositiveInset(cssInsets)) {
+            return cssInsets;
+        }
+
         const probe = document.createElement('div');
         probe.style.position = 'fixed';
         probe.style.visibility = 'hidden';
@@ -43,12 +74,12 @@
         document.body.appendChild(probe);
 
         const computed = getComputedStyle(probe);
-        const insets = {
-            top: parseFloat(computed.paddingTop) || 0,
-            right: parseFloat(computed.paddingRight) || 0,
-            bottom: parseFloat(computed.paddingBottom) || 0,
-            left: parseFloat(computed.paddingLeft) || 0
-        };
+        const insets = normalizeInsets({
+            top: computed.paddingTop,
+            right: computed.paddingRight,
+            bottom: computed.paddingBottom,
+            left: computed.paddingLeft
+        });
 
         document.body.removeChild(probe);
         return insets;
@@ -118,7 +149,7 @@
             : 'square';
         const safeInsets = insets || readSafeAreaInsets();
         const notchPosition = typeof window.detectNotchPosition === 'function'
-            ? window.detectNotchPosition()
+            ? window.detectNotchPosition(safeInsets)
             : 'none';
 
         return {

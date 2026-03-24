@@ -1,23 +1,68 @@
-function detectNotchPosition() {
-    const probe = document.createElement('div');
-    try {
-        probe.style.position = 'fixed';
-        probe.style.visibility = 'hidden';
-        probe.style.pointerEvents = 'none';
-        probe.style.inset = '0';
-        probe.style.paddingTop = 'env(safe-area-inset-top, 0px)';
-        probe.style.paddingRight = 'env(safe-area-inset-right, 0px)';
-        probe.style.paddingBottom = 'env(safe-area-inset-bottom, 0px)';
-        probe.style.paddingLeft = 'env(safe-area-inset-left, 0px)';
-        document.body.appendChild(probe);
+function detectNotchPosition(inputInsets) {
+    function parsePx(value) {
+        const parsed = parseFloat(value);
+        return Number.isFinite(parsed) ? parsed : 0;
+    }
 
-        const computed = getComputedStyle(probe);
-        const insets = {
-            top: parseFloat(computed.paddingTop) || 0,
-            right: parseFloat(computed.paddingRight) || 0,
-            bottom: parseFloat(computed.paddingBottom) || 0,
-            left: parseFloat(computed.paddingLeft) || 0
+    function normalizeInsets(raw) {
+        const insets = raw || {};
+        return {
+            top: parsePx(insets.top),
+            right: parsePx(insets.right),
+            bottom: parsePx(insets.bottom),
+            left: parsePx(insets.left)
         };
+    }
+
+    function hasPositiveInset(insets) {
+        return insets.top > 0 || insets.right > 0 || insets.bottom > 0 || insets.left > 0;
+    }
+
+    function readInsetsFromCssVars() {
+        const root = getComputedStyle(document.documentElement);
+        return normalizeInsets({
+            top: root.getPropertyValue('--safe-area-top'),
+            right: root.getPropertyValue('--safe-area-right'),
+            bottom: root.getPropertyValue('--safe-area-bottom'),
+            left: root.getPropertyValue('--safe-area-left')
+        });
+    }
+
+    function readInsetsFromProbe() {
+        const probe = document.createElement('div');
+        try {
+            probe.style.position = 'fixed';
+            probe.style.visibility = 'hidden';
+            probe.style.pointerEvents = 'none';
+            probe.style.inset = '0';
+            probe.style.paddingTop = 'env(safe-area-inset-top, 0px)';
+            probe.style.paddingRight = 'env(safe-area-inset-right, 0px)';
+            probe.style.paddingBottom = 'env(safe-area-inset-bottom, 0px)';
+            probe.style.paddingLeft = 'env(safe-area-inset-left, 0px)';
+            document.body.appendChild(probe);
+
+            const computed = getComputedStyle(probe);
+            return normalizeInsets({
+                top: computed.paddingTop,
+                right: computed.paddingRight,
+                bottom: computed.paddingBottom,
+                left: computed.paddingLeft
+            });
+        } finally {
+            if (probe.parentNode) {
+                probe.parentNode.removeChild(probe);
+            }
+        }
+    }
+
+    try {
+        const providedInsets = normalizeInsets(inputInsets);
+        const cssInsets = readInsetsFromCssVars();
+        const insets = hasPositiveInset(providedInsets)
+            ? providedInsets
+            : hasPositiveInset(cssInsets)
+                ? cssInsets
+                : readInsetsFromProbe();
 
         const orientationType = (window.screen.orientation && window.screen.orientation.type) || '';
         const edges = [
@@ -34,7 +79,7 @@ function detectNotchPosition() {
             return 'none';
         }
 
-        if (edges.length > 1 && strongest.value === edges[1].value) {
+        if (edges.length > 1 && Math.abs(strongest.value - edges[1].value) < 0.5) {
             if (orientationType.indexOf('portrait-primary') === 0) return 'up';
             if (orientationType.indexOf('portrait-secondary') === 0) return 'down';
             if (orientationType.indexOf('landscape-primary') === 0) return 'left';
@@ -51,9 +96,5 @@ function detectNotchPosition() {
     } catch (error) {
         console.error('[SafeArea] detectNotchPosition failed:', error);
         return 'none';
-    } finally {
-        if (probe.parentNode) {
-            probe.parentNode.removeChild(probe);
-        }
     }
 }

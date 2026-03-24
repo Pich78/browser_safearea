@@ -26,11 +26,27 @@
         toggleBtn: document.getElementById('toggleBtn')
     };
 
+    let layoutPassToken = 0;
+
+    function runWhenLayoutReady(callback) {
+        const token = ++layoutPassToken;
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                if (token !== layoutPassToken) {
+                    return;
+                }
+                callback();
+            });
+        });
+    }
+
     function renderRuntimeInfo(state) {
         const runtimeInfo = SafeAreaComponent.getRuntimeInfo(state.insets);
-        const notchPosition = typeof window.detectNotchPosition === 'function'
-            ? window.detectNotchPosition()
-            : 'none';
+        const notchPosition = runtimeInfo.notchPosition || (
+            typeof window.detectNotchPosition === 'function'
+                ? window.detectNotchPosition(state.insets)
+                : 'none'
+        );
         const screenWidth = window.screen.width;
         const screenHeight = window.screen.height;
         const innerWidth = window.innerWidth;
@@ -46,7 +62,7 @@
         elements.windowSize.textContent = `${innerWidth}x${innerHeight}`;
         elements.dpr.textContent = dpr;
 
-        console.log(`[SafeArea] Notch position: ${notchPosition}`);
+        console.log(`[SafeArea] Notch position: ${notchPosition}`, state.insets);
     }
 
     function renderStatus() {
@@ -64,8 +80,10 @@
 
     function refreshView() {
         const state = renderStatus();
-        renderRuntimeInfo(state);
-        SafeAreaComponent.notify();
+        runWhenLayoutReady(() => {
+            renderRuntimeInfo(state);
+            SafeAreaComponent.notify();
+        });
     }
 
     function toggleCase() {
